@@ -9,77 +9,108 @@ interface LoginProps {
 const Login = ({ handleChange }: LoginProps) => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+		{}
+	);
+	const [touched, setTouched] = useState<{
+		email?: boolean;
+		password?: boolean;
+	}>({});
+
+	const validate = () => {
+		const newErrors: { email?: string; password?: string } = {};
+		if (!email) {
+			newErrors.email = "Email is required.";
+		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			newErrors.email = "Enter a valid email.";
+		}
+		if (!password) {
+			newErrors.password = "Password is required.";
+		}
+		return newErrors;
+	};
+
+	const handleBlur = (field: "email" | "password") => {
+		setTouched((t) => ({ ...t, [field]: true }));
+		setErrors(validate());
+	};
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		const validationErrors = validate();
+		setTouched({ email: true, password: true });
+		setErrors(validationErrors);
+		if (Object.keys(validationErrors).length > 0) return;
 
-		if (email && password) {
-			await signInWithEmailAndPassword(auth, email, password)
-				.then((userCredential) => {
-					// Signed in
-					const user = userCredential.user;
-					console.log("User logged in:", user);
-				})
-				.catch((error) => {
-					const errorCode = error.code;
-					const errorMessage = error.message;
-					alert(`Error ${errorCode}: ${errorMessage}`);
-				});
-		}
+		await signInWithEmailAndPassword(auth, email, password).catch(
+			(error) => {
+				alert(`Error ${error.code}: ${error.message}`);
+			}
+		);
 	};
+
 	return (
-		<>
-			<form
-				action="#"
-				method="post"
-				className="bg-white p-3 p-md-5 rounded-5 col-11 col-md-7 col-lg-5 auth-form"
-				onSubmit={handleSubmit}
-			>
-				<p className="fs-3 text-center fw-bold">Log in</p>
-				<div className="form-floating w-100">
+		<div className="auth-card">
+			<p className="auth-title text-center">Welcome back</p>
+			<form noValidate onSubmit={handleSubmit}>
+				<div className="form-floating mb-3">
 					<input
 						type="email"
-						className="form-control mb-3"
+						className={`form-control ${
+							touched.email
+								? errors.email
+									? "is-invalid"
+									: "is-valid"
+								: ""
+						}`}
 						id="log_email"
 						placeholder=""
-						required
+						value={email}
 						onChange={(e) => setEmail(e.target.value)}
+						onBlur={() => handleBlur("email")}
 					/>
-					<label htmlFor="log_email" className="fs-6">
-						Email...
-					</label>
+					<label htmlFor="log_email">Email</label>
+					{errors.email && (
+						<div className="invalid-feedback">{errors.email}</div>
+					)}
 				</div>
 
-				<div className="form-floating w-100">
+				<div className="form-floating mb-4">
 					<input
 						type="password"
-						className="form-control mb-3"
-						pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+						className={`form-control ${
+							touched.password
+								? errors.password
+									? "is-invalid"
+									: "is-valid"
+								: ""
+						}`}
 						id="log_pass"
 						placeholder=""
-						required
+						value={password}
 						onChange={(e) => setPassword(e.target.value)}
+						onBlur={() => handleBlur("password")}
 					/>
-					<label htmlFor="log_pass" className="fs-6">
-						Password...
-					</label>
+					<label htmlFor="log_pass">Password</label>
+					{errors.password && (
+						<div className="invalid-feedback">
+							{errors.password}
+						</div>
+					)}
 				</div>
 
-				<span className="mb-2">
-					Don't have an account?
-					<span
-						onClick={handleChange}
-						className="text-primary"
-						style={{ cursor: "pointer" }}
-					>
-						Create one
-					</span>
-				</span>
-				<button type="submit" className="btn btn-primary">
+				<button type="submit" className="btn btn-navy mb-3">
 					Log in
 				</button>
+
+				<p className="switch-text text-center mb-0">
+					Don't have an account?
+					<span onClick={handleChange} className="switch-link">
+						Create one
+					</span>
+				</p>
 			</form>
-		</>
+		</div>
 	);
 };
 

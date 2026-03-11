@@ -1,105 +1,165 @@
 import { useState } from "react";
 import { auth } from "../firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+	createUserWithEmailAndPassword,
+	sendEmailVerification,
+} from "firebase/auth";
 
 interface SignUpProps {
-    handleChange: () => void;
+	handleChange: () => void;
 }
 
 const SignUp = ({ handleChange }: SignUpProps) => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+	const [errors, setErrors] = useState<{
+		email?: string;
+		password?: string;
+		confirm?: string;
+	}>({});
+	const [touched, setTouched] = useState<{
+		email?: boolean;
+		password?: boolean;
+		confirm?: boolean;
+	}>({});
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (password !== confirmPassword) {
-            alert("Passwords do not match!");
-            return;
-        }
+	const validate = () => {
+		const newErrors: {
+			email?: string;
+			password?: string;
+			confirm?: string;
+		} = {};
+		if (!email) newErrors.email = "Email is required.";
+		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+			newErrors.email = "Enter a valid email.";
+		if (!password) newErrors.password = "Password is required.";
+		else if (password.length < 8)
+			newErrors.password = "At least 8 characters.";
+		else if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])/.test(password))
+			newErrors.password =
+				"Must include uppercase, lowercase, and a number.";
+		if (!confirmPassword)
+			newErrors.confirm = "Please confirm your password.";
+		else if (confirmPassword !== password)
+			newErrors.confirm = "Passwords do not match.";
+		return newErrors;
+	};
 
-        if (email && password) {
-            await createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    console.log("User created:", user);
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    alert(`Error ${errorCode}: ${errorMessage}`);
-                });
-        }
-        return (
-            <>
-                <form
-                    action="#"
-                    method="post"
-                    onSubmit={handleSubmit}
-                    className="bg-white p-3 p-md-5 rounded-5 col-11 col-md-7 col-lg-5 auth-form"
-                >
-                    <p className="fs-3 text-center fw-bold">Sign up</p>
-                    <div className="form-floating w-100">
-                        <input
-                            type="email"
-                            className="form-control mb-3"
-                            id="sign_email"
-                            placeholder=""
-                            required
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <label htmlFor="sign_email" className="fs-6">
-                            Email...
-                        </label>
-                    </div>
+	const handleBlur = (field: "email" | "password" | "confirm") => {
+		setTouched((t) => ({ ...t, [field]: true }));
+		setErrors(validate());
+	};
 
-                    <div className="form-floating w-100">
-                        <input
-                            type="password"
-                            className="form-control mb-3"
-                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                            id="sign_pass"
-                            placeholder=""
-                            required
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <label htmlFor="sign_pass" className="fs-6">
-                            Password...
-                        </label>
-                    </div>
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const validationErrors = validate();
+		setTouched({ email: true, password: true, confirm: true });
+		setErrors(validationErrors);
+		if (Object.keys(validationErrors).length > 0) return;
 
-                    <div className="form-floating w-100">
-                        <input
-                            type="password"
-                            className="form-control mb-3"
-                            id="con_pass"
-                            placeholder=""
-                            required
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                        <label htmlFor="con_pass" className="fs-6">
-                            Confirm password...
-                        </label>
-                    </div>
+		const userCredentials = await createUserWithEmailAndPassword(
+			auth,
+			email,
+			password
+		).catch((error) => {
+			alert(`Error ${error.code}: ${error.message}`);
+		});
 
-                    <span className="mb-2">
-                        Have an account?
-                        <span
-                            onClick={handleChange}
-                            className="text-primary"
-                            style={{ cursor: "pointer" }}
-                        >
-                            Log in
-                        </span>
-                    </span>
-                    <button type="submit" className="btn btn-primary">
-                        Create
-                    </button>
-                </form>
-            </>
-        );
-    };
+		const user = userCredentials?.user;
+		if (user) {
+			console.log("User created:", user);
+		}
+		await sendEmailVerification(user!).catch((error) => {
+			console.log(`Error ${error.code}: ${error.message}`);
+		});
+	};
+
+	return (
+		<div className="auth-card">
+			<p className="auth-title text-center">Create account</p>
+			<form noValidate onSubmit={handleSubmit}>
+				<div className="form-floating mb-3">
+					<input
+						type="email"
+						className={`form-control ${
+							touched.email
+								? errors.email
+									? "is-invalid"
+									: "is-valid"
+								: ""
+						}`}
+						id="sign_email"
+						placeholder=""
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						onBlur={() => handleBlur("email")}
+					/>
+					<label htmlFor="sign_email">Email</label>
+					{errors.email && (
+						<div className="invalid-feedback">{errors.email}</div>
+					)}
+				</div>
+
+				<div className="form-floating mb-3">
+					<input
+						type="password"
+						className={`form-control ${
+							touched.password
+								? errors.password
+									? "is-invalid"
+									: "is-valid"
+								: ""
+						}`}
+						id="sign_pass"
+						placeholder=""
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						onBlur={() => handleBlur("password")}
+					/>
+					<label htmlFor="sign_pass">Password</label>
+					{errors.password && (
+						<div className="invalid-feedback">
+							{errors.password}
+						</div>
+					)}
+				</div>
+
+				<div className="form-floating mb-4">
+					<input
+						type="password"
+						className={`form-control ${
+							touched.confirm
+								? errors.confirm
+									? "is-invalid"
+									: "is-valid"
+								: ""
+						}`}
+						id="con_pass"
+						placeholder=""
+						value={confirmPassword}
+						onChange={(e) => setConfirmPassword(e.target.value)}
+						onBlur={() => handleBlur("confirm")}
+					/>
+					<label htmlFor="con_pass">Confirm password</label>
+					{errors.confirm && (
+						<div className="invalid-feedback">{errors.confirm}</div>
+					)}
+				</div>
+
+				<button type="submit" className="btn btn-navy mb-3">
+					Create account
+				</button>
+
+				<p className="switch-text text-center mb-0">
+					Already have an account?
+					<span onClick={handleChange} className="switch-link">
+						Log in
+					</span>
+				</p>
+			</form>
+		</div>
+	);
 };
 
 export default SignUp;
