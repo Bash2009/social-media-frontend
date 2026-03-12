@@ -1,10 +1,21 @@
 import { useState } from "react";
 import { auth } from "../firebase";
-import { sendEmailVerification, signOut } from "firebase/auth";
+import {
+	sendEmailVerification,
+	signOut,
+	onAuthStateChanged,
+} from "firebase/auth";
 
 const VerifyEmail = () => {
 	const [resent, setResent] = useState(false);
 	const [loading, setLoading] = useState(false);
+
+	// Listen for if the email has been verified
+	onAuthStateChanged(auth, (user) => {
+		if (user && user.emailVerified) {
+			window.location.reload(); // Reload to update the UI based on the new auth state  
+		}
+	});
 
 	const handleResend = async () => {
 		if (!auth.currentUser) return;

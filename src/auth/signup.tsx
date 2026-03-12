@@ -4,6 +4,7 @@ import {
 	createUserWithEmailAndPassword,
 	sendEmailVerification,
 } from "firebase/auth";
+import api from "../backend";
 
 interface SignUpProps {
 	handleChange: () => void;
@@ -69,6 +70,11 @@ const SignUp = ({ handleChange }: SignUpProps) => {
 		const user = userCredentials?.user;
 		if (user) {
 			console.log("User created:", user);
+			const response = await api.post("/auth/register", {
+				email,
+				uid: user.uid,
+			});
+			console.log(response);
 		}
 		await sendEmailVerification(user!).catch((error) => {
 			console.log(`Error ${error.code}: ${error.message}`);

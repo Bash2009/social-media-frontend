@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
 	onAuthStateChanged,
 	sendEmailVerification,
+	signOut,
 	type User,
 } from "firebase/auth";
 import { auth } from "./firebase";
@@ -11,7 +12,16 @@ import "./App.css";
 import "./verification/VerifyEmail.css";
 
 // Replace this with your actual authenticated app
-const Dashboard = () => <div>Your app here</div>;
+const Dashboard = () => (
+	<button
+		className="btn-navy-outline"
+		onClick={async () => {
+			await signOut(auth);
+		}}
+	>
+		Back to sign in
+	</button>
+);
 
 const App = () => {
 	async function resendVerificationEmail() {
