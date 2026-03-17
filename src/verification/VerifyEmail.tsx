@@ -1,21 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { auth } from "../firebase";
 import {
 	sendEmailVerification,
 	signOut,
 	onAuthStateChanged,
 } from "firebase/auth";
+import { useNavigate } from "react-router";
 
 const VerifyEmail = () => {
+	const navigate = useNavigate();
 	const [resent, setResent] = useState(false);
 	const [loading, setLoading] = useState(false);
 
 	// Listen for if the email has been verified
-	onAuthStateChanged(auth, (user) => {
-		if (user && user.emailVerified) {
-			window.location.reload(); // Reload to update the UI based on the new auth state  
-		}
-	});
+	useEffect(() => {
+		onAuthStateChanged(auth, (user) => {
+			if (user && user.emailVerified) {
+				navigate("/profile-setup"); // Navigate to profile setup when email is verified
+			}
+		});
+	}, []);
 
 	const handleResend = async () => {
 		if (!auth.currentUser) return;
@@ -33,6 +37,7 @@ const VerifyEmail = () => {
 
 	const handleSignOut = async () => {
 		await signOut(auth);
+		navigate("/");
 	};
 
 	return (

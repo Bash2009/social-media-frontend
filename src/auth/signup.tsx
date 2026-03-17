@@ -2,7 +2,6 @@ import { useState } from "react";
 import { auth } from "../firebase";
 import {
 	createUserWithEmailAndPassword,
-	sendEmailVerification,
 } from "firebase/auth";
 import api from "../backend";
 
@@ -76,9 +75,9 @@ const SignUp = ({ handleChange }: SignUpProps) => {
 			});
 			console.log(response);
 		}
-		await sendEmailVerification(user!).catch((error) => {
-			console.log(`Error ${error.code}: ${error.message}`);
-		});
+		// await sendEmailVerification(user!).catch((error) => {
+		// 	console.log(`Error ${error.code}: ${error.message}`);
+		// });
 	};
 
 	return (

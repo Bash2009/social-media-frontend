@@ -1,6 +1,7 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import { auth } from "../firebase";
+import api from "../backend";
 
 interface LoginProps {
 	handleChange: () => void;
@@ -42,11 +43,26 @@ const Login = ({ handleChange }: LoginProps) => {
 		setErrors(validationErrors);
 		if (Object.keys(validationErrors).length > 0) return;
 
-		await signInWithEmailAndPassword(auth, email, password).catch(
-			(error) => {
-				alert(`Error ${error.code}: ${error.message}`);
+		const userCredentials = await signInWithEmailAndPassword(
+			auth,
+			email,
+			password
+		).catch((error) => {
+			alert(`Error ${error.code}: ${error.message}`);
+		});
+
+		const user = userCredentials?.user;
+		if (user) {
+			console.log(user);
+			try {
+				const response = await api.post("/auth/login", {
+					uid: user.uid,
+				});
+				console.log(response);
+			} catch (error) {
+				console.log(error);
 			}
-		);
+		}
 	};
 
 	return (
