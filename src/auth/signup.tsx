@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { auth } from "../firebase";
-import {
-	createUserWithEmailAndPassword,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import api from "../backend";
+import { useNavigate } from "react-router-dom";
 
 interface SignUpProps {
 	handleChange: () => void;
 }
 
 const SignUp = ({ handleChange }: SignUpProps) => {
+	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -69,10 +69,20 @@ const SignUp = ({ handleChange }: SignUpProps) => {
 		const user = userCredentials?.user;
 		if (user) {
 			console.log("User created:", user);
-			const response = await api.post("/auth/register", {
-				email,
-				uid: user.uid,
-			});
+			const response = await api
+				.post("/auth/register", {
+					email,
+					uid: user.uid,
+				})
+				.then(({ data }) => {
+					localStorage.setItem("access_token", data.access_token);
+					localStorage.setItem("refresh_token", data.refresh_token);
+					navigate("/verify-email");
+				})
+				.catch((err) => {
+					alert(err);
+					signOut(auth);
+				});
 			console.log(response);
 		}
 		// await sendEmailVerification(user!).catch((error) => {

@@ -1,13 +1,15 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useState } from "react";
 import { auth } from "../firebase";
 import api from "../backend";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
 	handleChange: () => void;
 }
 
 const Login = ({ handleChange }: LoginProps) => {
+	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [errors, setErrors] = useState<{ email?: string; password?: string }>(
@@ -54,15 +56,35 @@ const Login = ({ handleChange }: LoginProps) => {
 		const user = userCredentials?.user;
 		if (user) {
 			console.log(user);
-			try {
-				const response = await api.post("/auth/login", {
-					uid: user.uid,
-				});
-				console.log(response);
-			} catch (error) {
-				console.log(error);
+			if (!user.emailVerified) {
+				navigate(`/verify-email`);
+				return;
 			}
+			await api
+				.post("/auth/login", {
+					uid: user.uid,
+				})
+				.then(({ data }) => {
+					localStorage.setItem("access_token", data.access_token);
+					localStorage.setItem("refresh_token", data.refresh_token);
+					checkProfile(user.uid);
+				})
+				.catch((err) => {
+					console.log(err);
+					signOut(auth);
+				});
 		}
+	};
+
+	const checkProfile = async (uid: string) => {
+		await api
+			.get(`/profile/${uid}`)
+			.then(() => {
+				navigate("/chats");
+			})
+			.catch(() => {
+				navigate("/profile-setup");
+			});
 	};
 
 	return (

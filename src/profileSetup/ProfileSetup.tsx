@@ -121,7 +121,7 @@ const ProfileSetup = () => {
 
 			await api.post("/profile/create", formData, {});
 
-			// onComplete();
+			navigate("/chats");
 		} catch (err: any) {
 			alert(
 				`Could not save profile: ${

@@ -19,6 +19,12 @@ const VerifyEmail = () => {
 				navigate("/profile-setup"); // Navigate to profile setup when email is verified
 			}
 		});
+		if (!auth.currentUser) return;
+		try {
+			sendEmailVerification(auth.currentUser);
+		} catch (error: any) {
+			console.log(`Error: ${error.message}`);
+		}
 	}, []);
 
 	const handleResend = async () => {
