@@ -78,7 +78,7 @@ const Login = ({ handleChange }: LoginProps) => {
 
 	const checkProfile = async (uid: string) => {
 		await api
-			.get(`/profile/${uid}`)
+			.get(`/profile/id/${uid}`)
 			.then(() => {
 				navigate("/chats");
 			})

@@ -88,12 +88,21 @@ const ProfileSetup = () => {
 		}, 220);
 	};
 
-	const goNext = () => {
+	const goNext = async () => {
 		if (step === 1) {
 			const errs = validateIdentity(data);
 			setTouched({ firstName: true, lastName: true, username: true });
 			setErrors(errs);
 			if (Object.keys(errs).length > 0) return;
+
+			const checkUsername = await api.get(
+				`/profile/name/${data.username}`
+			);
+
+			if (checkUsername.data.userExists) {
+				alert("User with this username already exists");
+				return;
+			}
 		}
 		if (step === 2) {
 			const errs = validateAbout(data);

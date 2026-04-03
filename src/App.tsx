@@ -6,8 +6,8 @@ import ProfileSetup from "./profileSetup/ProfileSetup";
 import Auth from "./auth/auth";
 import "./App.css";
 import "./verification/VerifyEmail.css";
-import "./chat/ChatList.css";
-import ChatList from "./chat/ChatList";
+import "./chatList/ChatList.css";
+import ChatList from "./chatList/ChatList";
 
 const App = () => {
 	return (
