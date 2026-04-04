@@ -11,6 +11,7 @@ import type {
 	Participant,
 	UserStatus,
 } from "./constants";
+import { auth } from "../firebase";
 
 // ── ChatList
 const ChatList = ({
@@ -79,8 +80,12 @@ const ChatList = ({
 		return () => document.removeEventListener("mousedown", handler);
 	}, []);
 
-	const handlePrivateChat = (username: string) => {
-		socket.emit("createChat", { username });
+	const handlePrivateChat = (uid: string) => {
+		// socket.emit("createChat", {
+		// 	members: [auth.currentUser?.uid, username],
+		// });
+		console.log([auth.currentUser?.uid, uid]);
+
 		setModal(null);
 	};
 

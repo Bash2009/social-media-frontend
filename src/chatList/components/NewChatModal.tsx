@@ -1,7 +1,13 @@
 import { useState } from "react";
 import type { NewChatModalProps } from "../constants";
 
-export const NewChatModal = ({ onClose, onStart, onSearch, userStatus, foundUser }: NewChatModalProps) => {
+export const NewChatModal = ({
+	onClose,
+	onStart,
+	onSearch,
+	userStatus,
+	foundUser,
+}: NewChatModalProps) => {
 	const [username, setUsername] = useState("");
 
 	const handleChange = (value: string) => {
@@ -11,7 +17,10 @@ export const NewChatModal = ({ onClose, onStart, onSearch, userStatus, foundUser
 
 	return (
 		<div className="chatlist-modal-overlay" onClick={onClose}>
-			<div className="chatlist-modal" onClick={(e) => e.stopPropagation()}>
+			<div
+				className="chatlist-modal"
+				onClick={(e) => e.stopPropagation()}
+			>
 				<p className="chatlist-modal-title">New conversation</p>
 
 				<input
@@ -21,7 +30,12 @@ export const NewChatModal = ({ onClose, onStart, onSearch, userStatus, foundUser
 					value={username}
 					autoFocus
 					onChange={(e) => handleChange(e.target.value)}
-					onKeyDown={(e) => e.key === "Enter" && userStatus === "found" && onStart(username.trim())}
+					onKeyDown={(e) =>
+						e.key === "Enter" &&
+						userStatus === "found" &&
+						foundUser?.uid &&
+						onStart(foundUser?.uid)
+					}
 				/>
 
 				{/* Status feedback */}
@@ -31,31 +45,60 @@ export const NewChatModal = ({ onClose, onStart, onSearch, userStatus, foundUser
 
 				{userStatus === "found" && foundUser && (
 					<div className="modal-user-found">
-						{foundUser.avatarUrl
-							? <img src={foundUser.avatarUrl} alt="" className="modal-user-avatar" />
-							: <div className="modal-user-avatar-initials">
-									{foundUser.firstName[0]}{foundUser.lastName[0]}
-								</div>}
+						{foundUser.avatarUrl ? (
+							<img
+								src={foundUser.avatarUrl}
+								alt=""
+								className="modal-user-avatar"
+							/>
+						) : (
+							<div className="modal-user-avatar-initials">
+								{foundUser.firstName[0]}
+								{foundUser.lastName[0]}
+							</div>
+						)}
 						<div>
-							<p className="modal-user-name">{foundUser.firstName} {foundUser.lastName}</p>
-							<p className="modal-user-username">@{foundUser.username}</p>
+							<p className="modal-user-name">
+								{foundUser.firstName} {foundUser.lastName}
+							</p>
+							<p className="modal-user-username">
+								@{foundUser.username}
+							</p>
 						</div>
-						<svg className="modal-user-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+						<svg
+							className="modal-user-check"
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						>
 							<polyline points="20 6 9 17 4 12" />
 						</svg>
 					</div>
 				)}
 
 				{userStatus === "not_found" && (
-					<p className="modal-user-status not-found">No user found with that username.</p>
+					<p className="modal-user-status not-found">
+						No user found with that username.
+					</p>
 				)}
 
 				<div className="chatlist-modal-actions">
-					<button className="chatlist-modal-cancel" onClick={onClose}>Cancel</button>
+					<button className="chatlist-modal-cancel" onClick={onClose}>
+						Cancel
+					</button>
 					<button
 						className="chatlist-modal-start"
 						disabled={userStatus !== "found"}
-						onClick={() => onStart(username.trim())}
+						onClick={() => {
+							const memberId = foundUser?.uid;
+							if (!memberId) return;
+							onStart(foundUser?.uid);
+						}}
 					>
 						Start chat
 					</button>
