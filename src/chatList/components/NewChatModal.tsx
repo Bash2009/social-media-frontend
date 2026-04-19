@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { NewChatModalProps } from "../constants";
+import { auth } from "../../firebase";
 
 export const NewChatModal = ({
 	onClose,
@@ -17,10 +18,7 @@ export const NewChatModal = ({
 
 	return (
 		<div className="chatlist-modal-overlay" onClick={onClose}>
-			<div
-				className="chatlist-modal"
-				onClick={(e) => e.stopPropagation()}
-			>
+			<div className="chatlist-modal" onClick={(e) => e.stopPropagation()}>
 				<p className="chatlist-modal-title">New conversation</p>
 
 				<input
@@ -43,45 +41,46 @@ export const NewChatModal = ({
 					<p className="modal-user-status loading">Searching…</p>
 				)}
 
-				{userStatus === "found" && foundUser && (
-					<div className="modal-user-found">
-						{foundUser.avatarUrl ? (
-							<img
-								src={foundUser.avatarUrl}
-								alt=""
-								className="modal-user-avatar"
-							/>
-						) : (
-							<div className="modal-user-avatar-initials">
-								{foundUser.firstName[0]}
-								{foundUser.lastName[0]}
+				{userStatus === "found" &&
+					foundUser &&
+					foundUser?.uid !== auth.currentUser?.uid && (
+						<div className="modal-user-found">
+							{foundUser.avatarUrl ? (
+								<img
+									src={foundUser.avatarUrl}
+									alt=""
+									className="modal-user-avatar"
+								/>
+							) : (
+								<div className="modal-user-avatar-initials">
+									{foundUser.firstName[0]}
+									{foundUser.lastName[0]}
+								</div>
+							)}
+							<div>
+								<p className="modal-user-name">
+									{foundUser.firstName} {foundUser.lastName}
+								</p>
+								<p className="modal-user-username">@{foundUser.username}</p>
 							</div>
-						)}
-						<div>
-							<p className="modal-user-name">
-								{foundUser.firstName} {foundUser.lastName}
-							</p>
-							<p className="modal-user-username">
-								@{foundUser.username}
-							</p>
+							<svg
+								className="modal-user-check"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<polyline points="20 6 9 17 4 12" />
+							</svg>
 						</div>
-						<svg
-							className="modal-user-check"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2.5"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<polyline points="20 6 9 17 4 12" />
-						</svg>
-					</div>
-				)}
+					)}
 
-				{userStatus === "not_found" && (
+				{(userStatus === "not_found" ||
+					(foundUser && foundUser?.uid === auth.currentUser?.uid)) && (
 					<p className="modal-user-status not-found">
 						No user found with that username.
 					</p>

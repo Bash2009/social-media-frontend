@@ -19,9 +19,7 @@ export const Avatar = ({
 		.join("")
 		.slice(0, 2)
 		.toUpperCase();
-	const hue =
-		name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
-
+	const hue = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
 	return (
 		<div
 			style={{

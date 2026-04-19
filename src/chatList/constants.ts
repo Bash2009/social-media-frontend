@@ -1,16 +1,22 @@
 export interface ChatStructure {
 	id: string;
-	participant: {
-		uid: string;
-		firstName: string;
-		lastName: string;
-		username: string;
-		avatarUrl?: string;
-		online: boolean;
-	};
+	name: string;
+	participants: {
+		user: {
+			uid: string;
+			profile: {
+				firstName: string;
+				lastName: string;
+				username: string;
+				avatarUrl: string;
+			};
+		};
+	}[];
 	lastMessage: string;
 	lastMessageAt: string;
 	unread: number;
+	isGroup: boolean;
+	avatarUrl: string;
 }
 
 export type Modal = "private" | "group" | null;

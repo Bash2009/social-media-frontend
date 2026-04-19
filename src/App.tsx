@@ -8,6 +8,7 @@ import "./App.css";
 import "./verification/VerifyEmail.css";
 import "./chatList/ChatList.css";
 import ChatList from "./chatList/ChatList";
+import ChatLayout from "./chatList/ChatLayout";
 
 const App = () => {
 	return (
@@ -16,18 +17,7 @@ const App = () => {
 				<Route path="/" element={<Auth />} />
 				<Route path="/verify-email" element={<VerifyEmail />} />
 				<Route path="/profile-setup" element={<ProfileSetup />} />
-				<Route
-					path="/chats"
-					element={
-						<ChatList
-							activeChatId=""
-							onSelectChat={() => {
-								return;
-							}}
-							key={1}
-						/>
-					}
-				/>
+				<Route path="/chats" element={<ChatLayout />} />
 			</Routes>
 		</BrowserRouter>
 	);
