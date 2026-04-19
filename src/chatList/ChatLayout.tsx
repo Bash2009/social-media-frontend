@@ -11,10 +11,8 @@ import "./ChatLayout.css";
 
 const ChatLayout = () => {
 	const [activeChat, setActiveChat] = useState<ChatStructure | null>(null);
-	const [chats, setChats] = useState<ChatStructure[]>([]);
 
 	const handleSelectChat = (id: string, allChats: ChatStructure[]) => {
-		setChats(allChats);
 		const found = allChats.find((c) => c.id === id) ?? null;
 		setActiveChat(found);
 	};
