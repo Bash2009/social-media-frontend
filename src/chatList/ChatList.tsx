@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { socket } from "../backend";
+import { logout } from "../backend";
 import { NewChatModal } from "./components/NewChatModal";
 import { NewGroupModal } from "./components/NewGroupModal";
 import "./ChatList.css";
@@ -7,6 +8,7 @@ import ChatTypeDropdown from "./components/ChatTypeDropdown";
 import Chat from "./components/Chat";
 import type { ChatStructure, Modal, Participant, UserStatus } from "./constants";
 import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 const ChatList = ({
 	activeChatId,
@@ -15,6 +17,7 @@ const ChatList = ({
 	activeChatId?: string;
 	onSelectChat: (id: string, allChats: ChatStructure[]) => void;
 }) => {
+	const navigate = useNavigate();
 	const [chats, setChats]           = useState<ChatStructure[]>([]);
 	const [search, setSearch]         = useState("");
 	const [loading, setLoading]       = useState(true);
@@ -25,16 +28,20 @@ const ChatList = ({
 	const [foundUser, setFoundUser]   = useState<Participant>();
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	// ── Socket lifecycle ─────────────────────────────────────────────────────
-	// ChatList owns the single shared socket connection.
-	// ChatRoom uses the same socket instance but never calls connect/disconnect.
+	// ── Socket lifecycle ──────────────────────────────────────────────────────
+	// ChatList owns the single shared socket. ChatRoom never calls connect/disconnect.
 
 	useEffect(() => {
 		socket.connect();
 		socket.emit("getChats", { username: auth.currentUser?.uid });
 
+		// Deduplicate by id to guard against StrictMode double-fire in dev
 		socket.on("chats", (data: ChatStructure[]) => {
-			setChats(data);
+			setChats((prev) => {
+				const existingIds = new Set(prev.map((c) => c.id));
+				const fresh = data.filter((c) => !existingIds.has(c.id));
+				return [...prev, ...fresh];
+			});
 			setLoading(false);
 		});
 
@@ -45,6 +52,8 @@ const ChatList = ({
 
 		socket.on("chatCreated", (newChat: ChatStructure) => {
 			setChats((prev) => {
+				// Don't add if it already exists (e.g. from a race condition)
+				if (prev.some((c) => c.id === newChat.id)) return prev;
 				const updated = [newChat, ...prev];
 				onSelectChat(newChat.id, updated);
 				return updated;
@@ -60,7 +69,7 @@ const ChatList = ({
 			}
 		});
 
-		// Keep the chat list preview fresh when a new message arrives in any room
+		// Keep chat list preview fresh when any room receives a new message
 		socket.on("newMessage", (msg: { chatId: string; text: string; sentAt: string }) => {
 			setChats((prev) =>
 				prev.map((c) =>
@@ -116,6 +125,11 @@ const ChatList = ({
 		socket.emit("getUser", { username });
 	};
 
+	const handleLogout = async () => {
+		await logout();
+		navigate("/");
+	};
+
 	// ── Filter ────────────────────────────────────────────────────────────────
 
 	const filtered = chats.filter((c) => {
@@ -153,20 +167,34 @@ const ChatList = ({
 			<div className="chatlist-root">
 				<div className="chatlist-header">
 					<h1 className="chatlist-title">Messages</h1>
-					<div className="chatlist-dropdown-wrap" ref={dropdownRef}>
+					<div className="chatlist-header-actions">
+						<div className="chatlist-dropdown-wrap" ref={dropdownRef}>
+							<button
+								className="chatlist-icon-btn"
+								title="New chat"
+								onClick={() => setDropdown((v) => !v)}
+							>
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+									<line x1="12" y1="5" x2="12" y2="19" />
+									<line x1="5" y1="12" x2="19" y2="12" />
+								</svg>
+							</button>
+							{dropdown && (
+								<ChatTypeDropdown setDropdown={setDropdown} setModal={setModal} />
+							)}
+						</div>
+
 						<button
 							className="chatlist-icon-btn"
-							title="New chat"
-							onClick={() => setDropdown((v) => !v)}
+							title="Sign out"
+							onClick={handleLogout}
 						>
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-								<line x1="12" y1="5" x2="12" y2="19" />
-								<line x1="5" y1="12" x2="19" y2="12" />
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+								<polyline points="16 17 21 12 16 7" />
+								<line x1="21" y1="12" x2="9" y2="12" />
 							</svg>
 						</button>
-						{dropdown && (
-							<ChatTypeDropdown setDropdown={setDropdown} setModal={setModal} />
-						)}
 					</div>
 				</div>
 
@@ -192,7 +220,6 @@ const ChatList = ({
 					)}
 
 					{filtered.map((chat, i) => {
-						
 						let fullName = "";
 						let avatarUrl = "";
 						let participant;
