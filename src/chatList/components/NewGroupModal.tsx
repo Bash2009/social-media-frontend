@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import type { NewGroupModalProps, Participant } from "../constants";
 import { auth } from "../../firebase";
 
@@ -15,7 +16,7 @@ export const NewGroupModal = ({
 
 	const handleQueryChange = (value: string) => {
 		setQuery(value);
-		if (value.trim().length >= 3) onSearch(value.trim());
+		if (value.trim().length >= 1) onSearch(value.trim());
 	};
 
 	const addParticipant = (p: Participant) => {
@@ -30,15 +31,11 @@ export const NewGroupModal = ({
 
 	const canSubmit = groupName.trim() && selected.length >= 1;
 
-	return (
+	return createPortal(
 		<div className="chatlist-modal-overlay" onClick={onClose}>
-			<div
-				className="chatlist-modal"
-				onClick={(e) => e.stopPropagation()}
-			>
+			<div className="chatlist-modal" onClick={(e) => e.stopPropagation()}>
 				<p className="chatlist-modal-title">New group chat</p>
 
-				{/* Group name */}
 				<input
 					type="text"
 					className="chatlist-modal-input"
@@ -48,7 +45,6 @@ export const NewGroupModal = ({
 					onChange={(e) => setGroupName(e.target.value)}
 				/>
 
-				{/* People search */}
 				<input
 					type="text"
 					className="chatlist-modal-input"
@@ -57,21 +53,21 @@ export const NewGroupModal = ({
 					onChange={(e) => handleQueryChange(e.target.value)}
 				/>
 
-				{/* Status feedback — mirrors NewChatModal */}
 				{searchStatus === "loading" && (
 					<p className="ncm-status loading">Searching…</p>
 				)}
 
 				{(searchStatus === "not_found" ||
-					(foundUser &&
-						foundUser?.uid === auth.currentUser?.uid)) && (
+					(foundUser && foundUser.uid === auth.currentUser?.uid)) && (
 					<p className="ncm-status not-found">
 						No user found with that username.
 					</p>
 				)}
+
 				{searchStatus === "found" &&
 					foundUser &&
-					foundUser.uid !== auth.currentUser?.uid && (
+					foundUser.uid !== auth.currentUser?.uid &&
+					!selected.find((s) => s.uid === foundUser.uid) && (
 						<div
 							className="ncm-user-preview ncm-user-preview--addable"
 							onClick={() => addParticipant(foundUser)}
@@ -92,11 +88,8 @@ export const NewGroupModal = ({
 								<p className="ncm-user-name">
 									{foundUser.firstName} {foundUser.lastName}
 								</p>
-								<p className="ncm-user-username">
-									@{foundUser.username}
-								</p>
+								<p className="ncm-user-username">@{foundUser.username}</p>
 							</div>
-							{/* Plus icon — signals the card is clickable to add */}
 							<svg
 								className="ncm-add-icon"
 								width="16"
@@ -113,11 +106,10 @@ export const NewGroupModal = ({
 						</div>
 					)}
 
-				{/* Selected participants */}
 				{selected.length > 0 && (
 					<div className="group-modal-chips">
-						{selected.map((p, i) => (
-							<div key={i} className="group-modal-chip">
+						{selected.map((p) => (
+							<div key={p.uid} className="group-modal-chip">
 								<span>
 									{p.firstName} {p.lastName}
 								</span>
@@ -156,6 +148,7 @@ export const NewGroupModal = ({
 					</button>
 				</div>
 			</div>
-		</div>
+		</div>,
+		document.body,
 	);
 };

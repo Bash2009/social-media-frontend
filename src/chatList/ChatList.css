@@ -161,3 +161,300 @@
 	min-width: 20px;
 	text-align: center;
 }
+
+/* ── Modal overlay & card ─────────────────────────────────────────────────── */
+
+.chatlist-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	animation: overlayFadeIn 0.15s ease;
+}
+
+@keyframes overlayFadeIn {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+
+.chatlist-modal {
+	background: #fff;
+	border-radius: 16px;
+	padding: 1.5rem;
+	width: 100%;
+	max-width: 400px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	animation: modalSlideUp 0.2s ease;
+}
+
+@keyframes modalSlideUp {
+	from { opacity: 0; transform: translateY(12px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+.chatlist-modal-title {
+	font-weight: 700;
+	font-size: 1.05rem;
+	color: var(--navy, #191970);
+	margin: 0 0 4px;
+}
+
+.chatlist-modal-input {
+	width: 100%;
+	padding: 9px 13px;
+	border: 1.5px solid #e5e7eb;
+	border-radius: 10px;
+	font-family: "DM Sans", sans-serif;
+	font-size: 0.9rem;
+	color: #374151;
+	outline: none;
+	transition: border-color 0.18s;
+	box-sizing: border-box;
+}
+.chatlist-modal-input:focus { border-color: var(--navy, #191970); }
+.chatlist-modal-input::placeholder { color: #9ca3af; }
+
+/* Actions row */
+.chatlist-modal-actions {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+	margin-top: 4px;
+}
+
+.chatlist-modal-cancel {
+	padding: 8px 18px;
+	border-radius: 9px;
+	border: 1.5px solid #e5e7eb;
+	background: #fff;
+	color: #374151;
+	font-family: "DM Sans", sans-serif;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
+}
+.chatlist-modal-cancel:hover { background: #f3f4f6; border-color: #d1d5db; }
+
+.chatlist-modal-start {
+	padding: 8px 18px;
+	border-radius: 9px;
+	border: none;
+	background: var(--navy, #191970);
+	color: #fff;
+	font-family: "DM Sans", sans-serif;
+	font-size: 0.875rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s, opacity 0.15s;
+}
+.chatlist-modal-start:hover    { background: #0f1b6b; }
+.chatlist-modal-start:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── User found card (NewChatModal) ──────────────────────────────────────── */
+
+.modal-user-status {
+	font-size: 0.82rem;
+	margin: 0;
+	padding: 2px 0;
+}
+.modal-user-status.loading   { color: #6b7280; }
+.modal-user-status.not-found { color: #ef4444; }
+
+.modal-user-found {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	background: #f8f9fa;
+	border-radius: 10px;
+	border: 1.5px solid #eceff1;
+}
+
+.modal-user-avatar {
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+.modal-user-avatar-initials {
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	background: #e0e4ff;
+	color: var(--navy, #191970);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 0.9rem;
+	flex-shrink: 0;
+}
+
+.modal-user-name {
+	font-weight: 600;
+	font-size: 0.88rem;
+	color: #111827;
+	margin: 0;
+}
+.modal-user-username {
+	font-size: 0.78rem;
+	color: #6b7280;
+	margin: 0;
+}
+
+.modal-user-check {
+	margin-left: auto;
+	color: #22c55e;
+	flex-shrink: 0;
+}
+
+/* ── NewGroupModal extras ─────────────────────────────────────────────────── */
+
+.ncm-status {
+	font-size: 0.82rem;
+	margin: 0;
+}
+.ncm-status.loading   { color: #6b7280; }
+.ncm-status.not-found { color: #ef4444; }
+
+.ncm-user-preview {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	background: #f8f9fa;
+	border-radius: 10px;
+	border: 1.5px solid #eceff1;
+}
+
+.ncm-user-preview--addable {
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
+}
+.ncm-user-preview--addable:hover {
+	background: #f0f2ff;
+	border-color: var(--navy, #191970);
+}
+
+.ncm-avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+.ncm-avatar-placeholder {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: #e0e4ff;
+	color: var(--navy, #191970);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 0.85rem;
+	flex-shrink: 0;
+}
+
+.ncm-user-name {
+	font-weight: 600;
+	font-size: 0.87rem;
+	color: #111827;
+	margin: 0;
+}
+.ncm-user-username {
+	font-size: 0.77rem;
+	color: #6b7280;
+	margin: 0;
+}
+
+.ncm-add-icon {
+	margin-left: auto;
+	color: var(--navy, #191970);
+	flex-shrink: 0;
+}
+
+/* ── Selected participants chips ──────────────────────────────────────────── */
+
+.group-modal-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.group-modal-chip {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	background: #e0e4ff;
+	color: var(--navy, #191970);
+	border-radius: 999px;
+	padding: 4px 10px 4px 12px;
+	font-size: 0.8rem;
+	font-weight: 500;
+}
+
+.group-modal-chip-remove {
+	background: none;
+	border: none;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	color: var(--navy, #191970);
+	opacity: 0.6;
+	transition: opacity 0.15s;
+}
+.group-modal-chip-remove:hover { opacity: 1; }
+
+/* ── New-chat dropdown menu ───────────────────────────────────────────────── */
+
+.chatlist-dropdown {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	z-index: 200;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	overflow: hidden;
+	min-width: 160px;
+	animation: dropdownFadeIn 0.12s ease;
+}
+
+@keyframes dropdownFadeIn {
+	from { opacity: 0; transform: translateY(-6px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+.chatlist-dropdown-item {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 10px 14px;
+	background: none;
+	border: none;
+	font-family: "DM Sans", sans-serif;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #111827;
+	cursor: pointer;
+	text-align: left;
+	transition: background 0.12s;
+}
+.chatlist-dropdown-item:hover { background: #f3f4f6; }
+.chatlist-dropdown-item svg   { flex-shrink: 0; color: var(--navy, #191970); }

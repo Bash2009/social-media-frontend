@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import type { NewChatModalProps } from "../constants";
 import { auth } from "../../firebase";
 
@@ -16,7 +17,7 @@ export const NewChatModal = ({
 		if (value.trim()) onSearch(value.trim());
 	};
 
-	return (
+	return createPortal(
 		<div className="chatlist-modal-overlay" onClick={onClose}>
 			<div className="chatlist-modal" onClick={(e) => e.stopPropagation()}>
 				<p className="chatlist-modal-title">New conversation</p>
@@ -32,18 +33,17 @@ export const NewChatModal = ({
 						e.key === "Enter" &&
 						userStatus === "found" &&
 						foundUser?.uid &&
-						onStart(foundUser?.uid)
+						onStart(foundUser.uid)
 					}
 				/>
 
-				{/* Status feedback */}
 				{userStatus === "loading" && (
 					<p className="modal-user-status loading">Searching…</p>
 				)}
 
 				{userStatus === "found" &&
 					foundUser &&
-					foundUser?.uid !== auth.currentUser?.uid && (
+					foundUser.uid !== auth.currentUser?.uid && (
 						<div className="modal-user-found">
 							{foundUser.avatarUrl ? (
 								<img
@@ -80,7 +80,7 @@ export const NewChatModal = ({
 					)}
 
 				{(userStatus === "not_found" ||
-					(foundUser && foundUser?.uid === auth.currentUser?.uid)) && (
+					(foundUser && foundUser.uid === auth.currentUser?.uid)) && (
 					<p className="modal-user-status not-found">
 						No user found with that username.
 					</p>
@@ -92,17 +92,17 @@ export const NewChatModal = ({
 					</button>
 					<button
 						className="chatlist-modal-start"
-						disabled={userStatus !== "found"}
+						disabled={userStatus !== "found" || foundUser?.uid === auth.currentUser?.uid}
 						onClick={() => {
-							const memberId = foundUser?.uid;
-							if (!memberId) return;
-							onStart(foundUser?.uid);
+							if (!foundUser?.uid) return;
+							onStart(foundUser.uid);
 						}}
 					>
 						Start chat
 					</button>
 				</div>
 			</div>
-		</div>
+		</div>,
+		document.body,
 	);
 };
